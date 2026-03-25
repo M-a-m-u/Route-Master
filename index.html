@@ -8,7 +8,7 @@
     <title>Route-Master V14 Mobile</title>
     <link rel="apple-touch-icon" href="icon.png">
     <style>
-        :root { --primary: #2563eb; --secondary: #64748b; --success: #22c55e; --danger: #ef4444; --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; }
+        :root { --primary: #2563eb; --secondary: #64748b; --success: #22c55e; --danger: #ef4444; --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; --warning: #b66a23ee; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: env(safe-area-inset-top) 10px 40px 10px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; }
         .card { background: var(--card); padding: 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -20,8 +20,15 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-clear { background: #94a3b8; color: white; }
+        .btn-notebook { background: var(--warning); color: white; }
+
         .btn-save { background: var(--success); color: white; width: 100%; padding: 16px; font-size: 1rem; margin-top: 15px; border-radius: 12px; }
         
+        /* Notizbuch Styling */
+        
+        #notebookArea { display: none; margin-bottom: 15px; }
+        .notebook-box { width: 100%; height: 120px !important; border: 2px solid var(--warning) !important; background: #fffdf0; }
+
         .route-block { border: 1px solid var(--border); border-radius: 12px; margin-top: 15px; background: var(--card); overflow: hidden; }
         .route-header { background: #e2e8f0; padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
         .route-content { display: block; }
@@ -43,12 +50,20 @@
 <div class="container">
     <h1>🛠 ROUTE-MASTER V14 MOBILE</h1>
 
+   
+    
+    <div id="notebookArea" class="card">
+        <textarea id="localNotes" class="notebook-box" placeholder="Deine kurzen Notizen hier... (wird automatisch gespeichert)" oninput="saveNotesLocal()"></textarea>
+        <button class="btn-mini btn-danger" onclick="clearNotesLocal()">Notiz löschen</button>
+    </div>
+
     <div class="card">
         <h3 style="margin-top:0; font-size: 0.9rem;">Daten laden</h3>
         <div class="controls">
             <input type="file" id="fileInput" accept=".json">
             <button class="btn-primary" onclick="loadProjectFile()">JSON</button>
             <button class="btn-danger" onclick="safeReset()">Reset</button>
+            <button class="btn-notebook" onclick="toggleNotebook()">Notiz</button>
         </div>
     </div>
 
@@ -76,13 +91,39 @@
 
     // BEIM START: Lokal gespeicherte Daten laden
     window.onload = () => {
+        // Bestehende Routen laden
         const savedData = localStorage.getItem('routeMasterData');
         if (savedData) {
             projectData = JSON.parse(savedData);
             renderEditor();
         }
+
+        // NEU: Notizen laden
+        const savedNotes = localStorage.getItem('route_master_notizen');
+        if (savedNotes) {
+            document.getElementById('localNotes').value = savedNotes;
+        }
     };
 
+    // NEU: Notiz-Funktionen
+    function toggleNotebook() {
+        const area = document.getElementById('notebookArea');
+        area.style.display = (area.style.display === 'none' || area.style.display === '') ? 'block' : 'none';
+    }
+
+    function saveNotesLocal() {
+        const text = document.getElementById('localNotes').value;
+        localStorage.setItem('route_master_notizen', text);
+    }
+
+    function clearNotesLocal() {
+        if(confirm("Notizbuch wirklich leeren?")) {
+            document.getElementById('localNotes').value = "";
+            localStorage.removeItem('route_master_notizen');
+        }
+    }
+
+    // --- Bestehende Route-Master Logik ---
     function saveToLocal() {
         localStorage.setItem('routeMasterData', JSON.stringify(projectData));
     }
